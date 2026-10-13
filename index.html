@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Do You Love Me?</title>
     <style>
+        * {
+            box-sizing: border-box;
+            touch-action: manipulation;
+        }
         body {
             margin: 0;
             padding: 0;
@@ -22,48 +26,52 @@
             padding: 30px;
             border-radius: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            max-width: 400px;
-            width: 90%;
+            max-width: 350px;
+            width: 85%;
+            position: relative;
         }
         .gif-container img {
-            width: 150px;
-            height: 150px;
+            width: 140px;
+            height: 140px;
             border-radius: 10px;
             object-fit: cover;
         }
         h1 {
             color: #d81b60;
-            font-size: 24px;
+            font-size: 22px;
             margin: 20px 0;
+            min-height: 60px;
         }
         .btn-container {
             display: flex;
             justify-content: center;
+            align-items: center;
             gap: 20px;
-            margin-top: 20px;
+            margin-top: 10px;
             position: relative;
-            height: 50px;
+            height: 60px;
         }
         button {
-            padding: 10px 25px;
+            padding: 12px 25px;
             font-size: 16px;
             font-weight: bold;
             border: none;
             border-radius: 10px;
             cursor: pointer;
-            transition: 0.2s ease;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
         #yesBtn {
             background-color: #e91e63;
             color: white;
-        }
-        #yesBtn:hover {
-            background-color: #c2185b;
+            z-index: 1;
         }
         #noBtn {
             background-color: #e0e0e0;
             color: #333;
             position: absolute;
+            transition: all 0.15s ease;
+            z-index: 10;
         }
     </style>
 </head>
@@ -71,13 +79,12 @@
 
     <div class="container">
         <div class="gif-container" id="gifContainer">
-            <!-- Cute initial GIF -->
             <img id="mainGif" src="https://media.giphy.com/media/T1WqKkLY753dZghbu6/giphy.gif" alt="Cute Cat">
         </div>
         <h1 id="questionText">Do you love me? 🥺</h1>
         <div class="btn-container" id="btnContainer">
             <button id="yesBtn" onclick="sayYes()">Yes</button>
-            <button id="noBtn" onmouseover="moveNoButton()" onclick="moveNoButton()">No</button>
+            <button id="noBtn">No</button>
         </div>
     </div>
 
@@ -85,35 +92,50 @@
         const messages = [
             "Please think again! 🥺",
             "Ek aur baar Soch lo! 🤔",
-            "Beautiful pls Man jao na! Kitna code likh waogi 😭",
+            "Beautiful pls Man jao na! 😭",
             "Soch lo acche se! 💭",
             "Man jao na yaar! ❤️"
         ];
         
         let messageIndex = 0;
+        const noBtn = document.getElementById('noBtn');
 
-        function moveNoButton() {
-            const noBtn = document.getElementById('noBtn');
+        function moveNoButton(e) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
             const questionText = document.getElementById('questionText');
-            const mainGif = document.getElementById('mainGif');
 
-            // Change text and gif on trying to click No
             if (messageIndex < messages.length) {
                 questionText.innerText = messages[messageIndex];
                 messageIndex++;
             } else {
-                messageIndex = 0; // loop messages if needed
+                messageIndex = 0;
                 questionText.innerText = messages[messageIndex];
             }
 
-            // Random movement inside screen bounds
-            const x = Math.random() * (window.innerWidth - 150);
-            const y = Math.random() * (window.innerHeight - 100);
+            // Screen ki limits ke hisab se safe random calculation
+            const padding = 20;
+            const btnWidth = noBtn.offsetWidth || 80;
+            const btnHeight = noBtn.offsetHeight || 40;
+
+            const maxX = window.innerWidth - btnWidth - padding;
+            const maxY = window.innerHeight - btnHeight - padding;
+
+            const randomX = Math.max(padding, Math.floor(Math.random() * maxX));
+            const randomY = Math.max(padding, Math.floor(Math.random() * maxY));
 
             noBtn.style.position = 'fixed';
-            noBtn.style.left = `${x}px`;
-            noBtn.style.top = `${y}px`;
+            noBtn.style.left = randomX + 'px';
+            noBtn.style.top = randomY + 'px';
         }
+
+        // Touch and Mouse events for both mobile and desktop
+        noBtn.addEventListener('touchstart', moveNoButton, { passive: false });
+        noBtn.addEventListener('mouseover', moveNoButton);
+        noBtn.addEventListener('click', moveNoButton);
 
         function sayYes() {
             const container = document.querySelector('.container');
